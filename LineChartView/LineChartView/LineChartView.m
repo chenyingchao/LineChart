@@ -9,19 +9,36 @@
 #import "LineChartView.h"
 
 
+#define P_M(x,y) CGPointMake(x, y)
+
+#define UIColorFromRGB(rgbValue)    [UIColor \
+colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 \
+green:((float)((rgbValue & 0xFF00) >> 8))/255.0 \
+blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+
+#define UIColorFromAlphaRGB(rgbValue,a) \
+[UIColor \
+colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 \
+green:((float)((rgbValue & 0xFF00) >> 8))/255.0 \
+blue:((float)(rgbValue & 0xFF))/255.0 alpha:(a)]
 
 #define FoldLineColor [UIColor colorWithRed:0 green:255 blue:254 alpha:1]
 
 @interface LineChartView ()
 
-@property (assign, nonatomic)   CGFloat  xLength;
-@property (assign , nonatomic)  CGFloat  yLength;
-@property (assign , nonatomic)  CGFloat  perXLen ;
-@property (assign , nonatomic)  CGFloat  perYlen ;
+@property (nonatomic, assign) CGFloat  xLength;
 
-@property (nonatomic,strong)    NSMutableArray * drawDataArr;
-@property (nonatomic,strong) CAShapeLayer *shapeLayer;
-@property (assign , nonatomic) BOOL  isEndAnimation ;
+@property (nonatomic, assign) CGFloat  yLength;
+
+@property (nonatomic, assign) CGFloat  perXLen ;
+
+@property (nonatomic, assign) CGFloat  perYlen ;
+
+@property (nonatomic,strong)  NSMutableArray * drawDataArr;
+
+@property (nonatomic,strong)  CAShapeLayer *shapeLayer;
+
+@property (nonatomic, assign)  BOOL isEndAnimation ;
 
 @property (nonatomic, strong)  CAShapeLayer *markLayerX;
 
@@ -29,9 +46,9 @@
 
 @property (nonatomic, strong)  CAShapeLayer *littleRingLayer;
 
-@property (assign , nonatomic)  CGFloat  maxValue ;
+@property (nonatomic, assign)  CGFloat  maxValue ;
 
-@property (assign , nonatomic)  CGFloat  maxYValue ;
+@property (nonatomic, assign)  CGFloat  maxYValue ;
 
 @end
 
@@ -49,147 +66,7 @@
 
 #pragma mark 开始绘图
 -(void)showAnimation{
-    
-    NSDate *checkIndate = [NSDate at_dateFromString: self.checkInDateStr];
-    NSDate *checkOutdate = [NSDate at_dateFromString: self.checkOutDateStr];
-    NSInteger days = [checkIndate daysBetween:checkOutdate];
-    NSComparisonResult result = [checkIndate compare:checkOutdate];
-    if (result == NSOrderedSame) {
-        _lineChartViewType = LineChartViewType24Hours;
-        _xLineDataArr = @[@"0:00",@"4:00",@"8:00",@"12:00",@"16:00",@"20:00",@"24:00"];
-        
-    } else {
-       _lineChartViewType = LineChartViewTypeDays;
-    
-        if (days <= 7) {
-            NSMutableArray *mutableDays = [[NSMutableArray alloc] init];
-            for (NSInteger i = 0; i < days; i++) {
-                
-                [mutableDays addObject: [checkIndate stringForMonthDay]];
-                
-                NSDate *nextDate = [NSDate dateWithTimeInterval:24*60*60 sinceDate:checkIndate];
-                checkIndate = nextDate;
-                
-            }
-            _xLineDataArr = mutableDays;
-            
-            
-        }
-        
-        
-        if ((days > 7) && (days <= 14)  ) {
-            NSMutableArray *mutableDays = [[NSMutableArray alloc] init];
-            for (NSInteger i = 0; i < days / 2; i++) {
-                
-                [mutableDays addObject: [checkIndate stringForMonthDay]];
-                
-                NSDate *nextDate = [NSDate dateWithTimeInterval:24*60*60 * 2 sinceDate:checkIndate];
-                checkIndate = nextDate;
-                
-            }
-            _xLineDataArr = mutableDays;
-            
-            NSMutableArray *mutableValues = [[NSMutableArray alloc] init];
-            for (NSInteger i = 0; i < days; i++) {
-              
-                [mutableValues addObject:_valueArr[i]];
-            
-                i++;
-                if (mutableValues.count == _xLineDataArr.count) {
-                    break;
-                }
-            }
-            
-            _valueArr = mutableValues;
-            
-            
-        }
-        
-        
-        if ((days > 14) && (days <= 21)  ) {
-            
-            NSMutableArray *mutableDays = [[NSMutableArray alloc] init];
-            for (NSInteger i = 0; i < days / 3; i++) {
-                
-                [mutableDays addObject: [checkIndate stringForMonthDay]];
-                
-                NSDate *nextDate = [NSDate dateWithTimeInterval:24*60*60 * 3 sinceDate:checkIndate];
-                checkIndate = nextDate;
-                
-            }
-            _xLineDataArr = mutableDays;
-            
-            
-            NSMutableArray *mutableValues = [[NSMutableArray alloc] init];
-            for (NSInteger i = 0; i < days; i++) {
-                
-                [mutableValues addObject:_valueArr[i]];
-                i = i + 2;
-                
-                if (mutableValues.count == _xLineDataArr.count) {
-                    break;
-                }
-            }
-            
-            _valueArr = mutableValues;
-
-            
-        }
-        
-        if ((days > 21) && (days <= 31)  ) {
-            
-            NSMutableArray *mutableDays = [[NSMutableArray alloc] init];
-            for (NSInteger i = 0; i < days / 4; i++) {
-                
-                [mutableDays addObject: [checkIndate stringForMonthDay]];
-                
-                NSDate *nextDate = [NSDate dateWithTimeInterval:24*60*60 * 4 sinceDate:checkIndate];
-                checkIndate = nextDate;
-                
-                
-            }
-            _xLineDataArr = mutableDays;
-            
-            
-            NSMutableArray *mutableValues = [[NSMutableArray alloc] init];
-            for (NSInteger i = 0; i < days; i++) {
-                
-                [mutableValues addObject:_valueArr[i]];
-                i = i + 3;
-                
-                if (mutableValues.count == _xLineDataArr.count) {
-                    break;
-                }
-            }
-            
-            _valueArr = mutableValues;
-            
-        }
-
-    
-    }
-    
    
-  //配置y坐标
-    _maxValue = [[self.valueArr valueForKeyPath:@"@max.floatValue"] floatValue];
-    if (_maxValue <= 1000) {
-        self.yLineDataArr = @[@250,@500,@750,@1000];
-    }
-    if ((_maxValue <= 4000) && (_maxValue > 1000)) {
-        self.yLineDataArr = @[@1000,@2000,@3000,@4000];
-    }
-    if ((_maxValue <= 10000) && (_maxValue > 4000)) {
-        self.yLineDataArr = @[@2500,@5000,@7500,@10000];
-    }
-    
-    if ((_maxValue <= 100000) && (_maxValue > 10000)) {
-        self.yLineDataArr = @[@25000,@50000,@75000,@100000];
-    }
-    if (_maxValue > 100000) {
-        self.yLineDataArr = @[@100000,@200000,@300000,@400000];
-    }
-
-    
     [self configChartXAndYLength];//xy 长度
     [self configChartOrigin]; //坐标原点
     [self configPerXAndPerY];//xy间隔
@@ -239,31 +116,19 @@
     
     CGFloat kDate;
     CGFloat kMoney;
-    if (_lineChartViewType == LineChartViewType24Hours) {
-
-        kDate = (x / _xLength) * 24;
-        kMoney = _maxYValue - (y / _yLength) * _maxYValue;
-        
-        NSString *dataStr = [NSString stringWithFormat:@"%.0f:00", round(kDate)];
-        NSString *moneyStr = [NSString stringWithFormat:@"%.2f", roundf(kMoney*100)/100];
-        self.didSelectPointBlock(dataStr, moneyStr);
-        
-        
-    } else {
-        kDate = (x / _xLength) * (self.xLineDataArr.count - 1);
-        kMoney = _maxYValue - (y / _yLength) * _maxYValue;
-         NSInteger index = (NSInteger)round(kDate);
-       
-        
-        NSString *dataStr = [NSString stringWithFormat:@"%@", self.xLineDataArr[index]];
-        NSString *moneyStr = [NSString stringWithFormat:@"%.2f", roundf(kMoney*100)/100];
-        self.didSelectPointBlock(dataStr, moneyStr);
-    }
+    
+    kDate = (x / _xLength) * 24;
+    kMoney = _maxYValue - (y / _yLength) * _maxYValue;
+    
+    NSString *dataStr = [NSString stringWithFormat:@"%.0f:00", round(kDate)];
+    NSString *moneyStr = [NSString stringWithFormat:@"%.2f", roundf(kMoney*100)/100];
+    self.didSelectPointBlock(dataStr, moneyStr);
 
 }
 
 #pragma mark  将数据 转换为坐标
 - (void)configValueDataArray{
+    
     _drawDataArr = [[NSMutableArray alloc] init];
    
         for (NSInteger i = 0; i<_valueArr.count; i++) {
@@ -276,12 +141,7 @@
             [_drawDataArr addObject:value];
         }
 
-        
     
-    
-    
-    [_shapeLayer removeFromSuperlayer];
-    _shapeLayer = [CAShapeLayer layer];
     if (_drawDataArr.count==0) {
         return;
     }
@@ -338,25 +198,26 @@
     
     [self.layer addSublayer:_markLayerY];
     
-    
-    if (_isDataChartView) {
-        UIBezierPath *path = [UIBezierPath bezierPath];
-        [path addArcWithCenter:P_M(markMaxX, markMaxL) radius:3 startAngle:0.0 endAngle:180.0 clockwise:YES];
 
-        _littleRingLayer = [CAShapeLayer layer];
-        _littleRingLayer.path = path.CGPath;
-        _littleRingLayer.strokeColor = UIColorFromRGB(0xff9900).CGColor;
-        _littleRingLayer.lineWidth = 0.5;
-        _littleRingLayer.fillColor = [UIColor whiteColor].CGColor;
-      
-        [self.layer insertSublayer:_littleRingLayer above:_markLayerY];
+    UIBezierPath *path = [UIBezierPath bezierPath];
+    [path addArcWithCenter:P_M(markMaxX, markMaxL) radius:3 startAngle:0.0 endAngle:180.0 clockwise:YES];
+
+    _littleRingLayer = [CAShapeLayer layer];
+    _littleRingLayer.path = path.CGPath;
+    _littleRingLayer.strokeColor = UIColorFromRGB(0xff9900).CGColor;
+    _littleRingLayer.lineWidth = 0.5;
+    _littleRingLayer.fillColor = [UIColor whiteColor].CGColor;
+  
+    [self.layer insertSublayer:_littleRingLayer above:_markLayerY];
         
-    }
+    
 }
 
 #pragma mark 开始画图
 - (void)drawPathWithDataArr:(NSArray *)dataArr andIndex:(NSInteger )colorIndex{
-    UIBezierPath *firstPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(0, 0, 0, 0)];
+    
+    
+    UIBezierPath *firstPath = [UIBezierPath bezierPathWithOvalInRect:CGRectZero];
     UIBezierPath *secondPath = [UIBezierPath bezierPath];
     
 
@@ -379,16 +240,6 @@
             [secondPath addLineToPoint:P_M(p.x, self.chartOrigin.y)];
             
         }
-   
-        if (!_isDataChartView) {
-            //添加光点
-            UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(p.x - 7.5, p.y - 7.5, 15, 15)];
-            
-            imageView.image = [UIImage imageNamed:@"point"];
-            imageView.userInteractionEnabled = YES;
-            [self addSubview:imageView];
-        }
-        
         
     }
     
@@ -429,28 +280,14 @@
         
         CAGradientLayer *gradientLayer = [CAGradientLayer layer];
         gradientLayer.frame = weakSelf.bounds;
-        if (!self.gradientColor) {
-            
-            gradientLayer.colors = @[(__bridge id)UIColorFromAlphaRGB(0x1b3fa6, 0.1).CGColor,
-                                     (__bridge id)UIColorFromAlphaRGB(0x1b3fa6, 0.8).CGColor,
-                                     (__bridge id)UIColorFromAlphaRGB(0x1b3fa6, 0.6).CGColor,
-                                     (__bridge id)UIColorFromAlphaRGB(0x1b3fa6, 0.4).CGColor,
-                                     (__bridge id)UIColorFromAlphaRGB(0x1b3fa6, 0.2).CGColor,
-                                     (__bridge id)UIColorFromAlphaRGB(0x1b3fa6, 0.0).CGColor,
-                                     ];
-            
-
-        } else {
-            gradientLayer.colors = @[(__bridge id)UIColorFromAlphaRGB(0xe1e8fb, 0.1).CGColor,
-                                     (__bridge id)UIColorFromAlphaRGB(0xe1e8fb, 0.8).CGColor,
-                                     (__bridge id)UIColorFromAlphaRGB(0xe1e8fb, 0.6).CGColor,
-                                     (__bridge id)UIColorFromAlphaRGB(0xe1e8fb, 0.4).CGColor,
-                                     (__bridge id)UIColorFromAlphaRGB(0xe1e8fb, 0.2).CGColor,
-                                     (__bridge id)UIColorFromAlphaRGB(0xe1e8fb, 0.0).CGColor,
-                                     ];
-
-        }
-
+        gradientLayer.colors = @[(__bridge id)UIColorFromAlphaRGB(0x1b3fa6, 0.1).CGColor,
+                                 (__bridge id)UIColorFromAlphaRGB(0x1b3fa6, 0.8).CGColor,
+                                 (__bridge id)UIColorFromAlphaRGB(0x1b3fa6, 0.6).CGColor,
+                                 (__bridge id)UIColorFromAlphaRGB(0x1b3fa6, 0.4).CGColor,
+                                 (__bridge id)UIColorFromAlphaRGB(0x1b3fa6, 0.2).CGColor,
+                                 (__bridge id)UIColorFromAlphaRGB(0x1b3fa6, 0.0).CGColor,
+                                 ];
+        
         gradientLayer.startPoint = CGPointMake(0,0);
         gradientLayer.endPoint = CGPointMake(1,1);
         
@@ -515,16 +352,13 @@
     [linePath1 addLineToPoint:P_M(intersectionPoint.x, 10)];
     self.markLayerY.path = linePath1.CGPath;
     
-    if (_isDataChartView) {
-        UIBezierPath *path = [UIBezierPath bezierPath];
-        [path addArcWithCenter:P_M(intersectionPoint.x, intersectionPoint.y) radius:3 startAngle:0.0 endAngle:180.0 clockwise:YES];
+    UIBezierPath *path = [UIBezierPath bezierPath];
+    [path addArcWithCenter:P_M(intersectionPoint.x, intersectionPoint.y) radius:3 startAngle:0.0 endAngle:180.0 clockwise:YES];
+    
+    _littleRingLayer.path = path.CGPath;
         
-        _littleRingLayer.path = path.CGPath;
-        
-    }
     
     
-
 }
 
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -566,7 +400,6 @@
         
     }
     
-    
     [self ponitToData:CGPointMake(intersectionPoint.x, intersectionPoint.y)];
     
     //横线
@@ -586,13 +419,11 @@
     [linePath1 addLineToPoint:P_M(intersectionPoint.x, 10)];
     self.markLayerY.path = linePath1.CGPath;
     
-    if (_isDataChartView) {
-        UIBezierPath *path = [UIBezierPath bezierPath];
-        [path addArcWithCenter:P_M(intersectionPoint.x, intersectionPoint.y) radius:3 startAngle:0.0 endAngle:180.0 clockwise:YES];
-    
-        _littleRingLayer.path = path.CGPath;
 
-    }
+    UIBezierPath *path = [UIBezierPath bezierPath];
+    [path addArcWithCenter:P_M(intersectionPoint.x, intersectionPoint.y) radius:3 startAngle:0.0 endAngle:180.0 clockwise:YES];
+
+    _littleRingLayer.path = path.CGPath;
 }
 
 
@@ -626,12 +457,9 @@
         for (NSInteger i = 0; i<_xLineDataArr.count;i++ ) {
             CGPoint p = P_M(i*xPace+self.chartOrigin.x, self.chartOrigin.y);
             CGFloat len = [self sizeOfStringWithMaxSize:CGSizeMake(CGFLOAT_MAX, 30) textFont:10 aimString:_xLineDataArr[i]].width;
-//            [self drawLineWithContext:context andStarPoint:p andEndPoint:P_M(p.x, p.y-3) andIsDottedLine:NO andColor:[Theme colorGray]];
-            
-            
-            UIColor *xTextColor = self.xTextColor?self.xTextColor:UIColorFromRGB(0xc5cae9);
-            
-            [self drawText:[NSString stringWithFormat:@"%@",_xLineDataArr[i]] andContext:context atPoint:P_M(p.x-len/2, p.y+2) WithColor:xTextColor andFontSize:10];
+
+
+            [self drawText:[NSString stringWithFormat:@"%@",_xLineDataArr[i]] andContext:context atPoint:P_M(p.x-len/2, p.y+2) WithColor:[UIColor blackColor] andFontSize:10];
             
         }
         
@@ -648,18 +476,17 @@
             CGFloat hei = [self sizeOfStringWithMaxSize:CGSizeMake(CGFLOAT_MAX, 30) textFont:10 aimString:_yLineDataArr[i]].height;
            
             
-            UIColor *yLineColor = self.yLineColor?self.yLineColor:UIColorFromRGB(0x313d80);
+           
             if (_showYLevelLine) {
-                [self drawLineWithContext:context andStarPoint:p andEndPoint:P_M(self.contentInsets.left+_xLength, p.y) andIsDottedLine:NO andColor:yLineColor];
+                [self drawLineWithContext:context andStarPoint:p andEndPoint:P_M(self.contentInsets.left+_xLength, p.y) andIsDottedLine:NO andColor:[UIColor blackColor]];
             
                 
             }else{
-                [self drawLineWithContext:context andStarPoint:p andEndPoint:P_M(p.x+3, p.y) andIsDottedLine:NO andColor:yLineColor];
+                [self drawLineWithContext:context andStarPoint:p andEndPoint:P_M(p.x+3, p.y) andIsDottedLine:NO andColor:[UIColor blackColor]];
             }
             
             
-            UIColor *yTextColor = self.yTextColor?self.yTextColor:UIColorFromRGB(0xc5cae9);
-            [self drawText:[NSString stringWithFormat:@"%@",_yLineDataArr[i]] andContext:context atPoint:P_M(p.x-len-3, p.y-hei / 2) WithColor:yTextColor andFontSize:10];
+                      [self drawText:[NSString stringWithFormat:@"%@",_yLineDataArr[i]] andContext:context atPoint:P_M(p.x-len-3, p.y-hei / 2) WithColor:[UIColor blackColor] andFontSize:10];
         }
     }
 
